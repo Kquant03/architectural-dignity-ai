@@ -1,0 +1,26 @@
+# Core dependencies
+numpy>=1.24.0
+torch>=2.0.0
+websockets>=11.0
+zerorpc>=0.6.3
+anthropic>=0.25.0
+
+# Memory and embedding
+sentence-transformers>=2.2.0
+faiss-gpu
+asyncpg>=0.27.0
+redis>=4.5.0
+
+# Consciousness modules
+networkx>=3.0
+scikit-learn>=1.2.0
+pandas>=2.0.0
+cupy-cuda11x>=12.0.0  # For RTX 3090 CUDA optimization
+
+# Emotional processing
+transformers>=4.30.0
+scipy>=1.10.0
+
+# Visualization and monitoring
+tensorboard>=2.12.0
+matplotlib>=3.7.0

@@ -1,6 +1,0 @@
-# Optional dependencies (may fail on some systems)
-opentelemetry-api
-opentelemetry-sdk
-anthropic
-openai
-# cupy-cuda11x  # Uncomment if you want CuPy

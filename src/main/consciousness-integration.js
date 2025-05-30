@@ -4,6 +4,7 @@
 import { ipcMain } from 'electron'
 import { spawn } from 'child_process'
 import WebSocket from 'ws'
+import { join } from 'path'  // Add this import
 
 class ConsciousnessIntegration {
   constructor(mainWindow) {

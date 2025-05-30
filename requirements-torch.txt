@@ -1,5 +1,0 @@
-# PyTorch with CUDA 11.8 support
---extra-index-url https://download.pytorch.org/whl/cu118
-torch>=2.0.0
-torchvision
-torchaudio

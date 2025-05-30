@@ -29,6 +29,7 @@ export class PythonBridge extends EventEmitter {
       const pythonExecutable = process.platform === 'win32' ? 'python' : 'python3'
       
       this.pythonProcess = spawn(pythonExecutable, [
+        '-u',  // Add this flag for unbuffered output
         pythonPath,
         '--gpu-memory', gpuConfig.memoryFraction.toString(),
         '--device', gpuConfig.device
@@ -148,34 +149,39 @@ export class PythonBridge extends EventEmitter {
       const startTime = Date.now()
       let attempts = 0
       
-      const checkConnection = () => {
-        attempts++
-        
-        if (!this.pythonProcess || this.pythonProcess.killed) {
-          reject(new Error('Python process not running'))
-          return
+      // In the waitForConnection method, add more logging:
+  const checkConnection = () => {
+    attempts++
+    
+    console.log(`Connection attempt ${attempts}...`)  // Add this
+    
+    if (!this.pythonProcess || this.pythonProcess.killed) {
+      reject(new Error('Python process not running'))
+      return
+    }
+    
+    // Give Python time to start up on first attempt
+    if (attempts === 1) {
+      setTimeout(checkConnection, 500)
+      return
+    }
+    
+    // Try to send a ping
+    console.log('Sending ping...')  // Add this
+    this.send('ping', {})
+      .then((response) => {
+        console.log('✅ Python process responded to ping:', response)  // Update this
+        resolve()
+      })
+      .catch((error) => {
+        console.log(`Ping failed: ${error.message}`)  // Add this
+        if (Date.now() - startTime < timeout) {
+          setTimeout(checkConnection, 200)
+        } else {
+          reject(new Error(`Connection timeout after ${attempts} attempts`))
         }
-        
-        // Give Python time to start up on first attempt
-        if (attempts === 1) {
-          setTimeout(checkConnection, 500)
-          return
-        }
-        
-        // Try to send a ping
-        this.send('ping', {})
-          .then(() => {
-            console.log('✅ Python process responded to ping')
-            resolve()
-          })
-          .catch((error) => {
-            if (Date.now() - startTime < timeout) {
-              setTimeout(checkConnection, 200)
-            } else {
-              reject(new Error(`Connection timeout after ${attempts} attempts`))
-            }
-          })
-      }
+      })
+  }
       
       // Start checking after a brief delay
       setTimeout(checkConnection, 100)

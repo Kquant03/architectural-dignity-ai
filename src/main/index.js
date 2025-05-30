@@ -302,11 +302,6 @@ app.on('before-quit', async (event) => {
   }
 })
 
-    // Clean up consciousness integration
-    if (this.consciousnessIntegration) {
-        this.consciousnessIntegration.cleanup()
-    }
-
 // Prevent multiple instances
 const gotTheLock = app.requestSingleInstanceLock()
 
