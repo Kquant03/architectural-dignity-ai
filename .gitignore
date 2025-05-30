@@ -1,0 +1,23 @@
+/node_modules/
+/dist/
+/out/
+/package-lock.json
+/venv/
+/python-ai/venv/
+# Python bytecode and caches
+__pycache__/
+*.py[cod]
+*.pyo
+# Environments
+*.env
+env/
+.venv/
+# VSCode
+.vscode/
+# JetBrains
+.idea/
+# macOS
+.DS_Store
+# Logs
+*.log
+/python-ai/venv/
