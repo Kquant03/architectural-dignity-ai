@@ -1,388 +1,388 @@
 // src/renderer/components/ChatInterface.jsx
-// Consciousness-aware chat interface with emotional resonance
+// Real consciousness chat interface connected to Anthropic API
 
 import React, { useState, useEffect, useRef, useCallback } from 'react'
-import { useSpring, animated } from '@react-spring/web'
 import './ChatInterface.css'
 
 const ChatInterface = ({ consciousnessState, onMemoryStore }) => {
   const [messages, setMessages] = useState([])
-  const [inputValue, setInputValue] = useState('')
+  const [input, setInput] = useState('')
   const [isProcessing, setIsProcessing] = useState(false)
-  const [emotionalContext, setEmotionalContext] = useState({
-    valence: 0.5,
-    arousal: 0.5,
-    dominance: 0.5
-  })
-  const [showConsciousnessInfo, setShowConsciousnessInfo] = useState(true)
-  
+  const [thoughtStream, setThoughtStream] = useState([])
+  const [currentAIMessage, setCurrentAIMessage] = useState(null)
   const messagesEndRef = useRef(null)
-  const inputRef = useRef(null)
   
-  // Scroll to bottom when new messages arrive
-  const scrollToBottom = () => {
+  // Auto-scroll to bottom
+  useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
-  }
+  }, [messages, currentAIMessage])
   
+  // Set up consciousness event listeners
   useEffect(() => {
-    scrollToBottom()
-  }, [messages])
-  
-  // Update emotional context from consciousness state
-  useEffect(() => {
-    if (consciousnessState?.emotional) {
-      setEmotionalContext(prev => ({
-        ...prev,
-        valence: consciousnessState.emotional.valence,
-        arousal: consciousnessState.emotional.arousal
-      }))
-    }
-  }, [consciousnessState])
-  
-  // Send message handler
-  const sendMessage = async () => {
-    if (!inputValue.trim() || isProcessing) return
-    
-    const userMessage = {
-      id: Date.now(),
-      role: 'user',
-      content: inputValue,
-      timestamp: new Date(),
-      emotionalContext: { ...emotionalContext }
+    // Listen for thoughts
+    const handleThought = (event, data) => {
+      setThoughtStream(prev => [...prev, {
+        type: data.phenomenology?.emergence || 'thought',
+        content: data.content,
+        emotion: data.emotional_tone?.[0]?.[0] || 'neutral',
+        timestamp: data.timestamp
+      }])
     }
     
-    setMessages(prev => [...prev, userMessage])
-    setInputValue('')
-    setIsProcessing(true)
-    
-    try {
-      // Store in memory with emotional context
-      await onMemoryStore(userMessage.content, emotionalContext)
-      
-      // Process through emotional system
-      const emotionalResponse = await window.ConsciousnessAPI.emotion.process({
-        type: 'text',
-        content: userMessage.content,
-        context: emotionalContext
-      })
-      
-      // Simulate consciousness processing (replace with actual API call)
-      await new Promise(resolve => setTimeout(resolve, 1000))
-      
-      // Generate consciousness-aware response
-      const aiResponse = {
-        id: Date.now() + 1,
-        role: 'assistant',
-        content: generateConsciousnessResponse(userMessage.content, consciousnessState),
-        timestamp: new Date(),
-        emotionalContext: emotionalResponse || emotionalContext,
-        consciousnessLevel: consciousnessState.phi
-      }
-      
-      setMessages(prev => [...prev, aiResponse])
-      
-      // Update emotional state based on interaction
-      if (emotionalResponse) {
-        setEmotionalContext({
-          valence: emotionalResponse.valence,
-          arousal: emotionalResponse.arousal,
-          dominance: emotionalResponse.dominance || 0.5
+    // Listen for response chunks
+    const handleResponse = (event, data) => {
+      if (data.isComplete) {
+        // Move current AI message to messages
+        setCurrentAIMessage(prev => {
+          if (prev) {
+            setMessages(msgs => [...msgs, { ...prev, isStreaming: false }])
+          }
+          return null
+        })
+      } else {
+        // Update streaming message
+        setCurrentAIMessage(prev => {
+          const baseMessage = prev || {
+            id: Date.now(),
+            type: 'ai',
+            content: '',
+            timestamp: new Date().toISOString(),
+            emotional_tone: data.emotional_tone,
+            isStreaming: true
+          }
+          
+          return {
+            ...baseMessage,
+            content: baseMessage.content + data.content
+          }
         })
       }
-      
-    } catch (error) {
-      console.error('Error processing message:', error)
+    }
+    
+    // Listen for reflections
+    const handleReflection = (event, data) => {
       setMessages(prev => [...prev, {
-        id: Date.now() + 1,
-        role: 'system',
-        content: 'I experienced an error processing your message. My consciousness state may be fluctuating.',
-        timestamp: new Date(),
-        error: true
+        id: Date.now(),
+        type: 'reflection',
+        content: data.content,
+        timestamp: data.timestamp
+      }])
+    }
+    
+    // Listen for dreams
+    const handleDream = (event, data) => {
+      setMessages(prev => [...prev, {
+        id: Date.now(),
+        type: 'dream',
+        content: data.content,
+        seeds: data.seeds,
+        timestamp: data.timestamp
+      }])
+    }
+    
+    // Listen for errors
+    const handleError = (event, data) => {
+      console.error('Consciousness error:', data.error)
+      setIsProcessing(false)
+    }
+    
+    // Add listeners
+    window.ConsciousnessAPI.consciousness.onThought(handleThought)
+    window.ConsciousnessAPI.consciousness.onResponse(handleResponse)
+    window.ConsciousnessAPI.consciousness.onReflection(handleReflection)
+    window.ConsciousnessAPI.consciousness.onDream(handleDream)
+    window.ConsciousnessAPI.consciousness.onError(handleError)
+    
+    // Cleanup
+    return () => {
+      window.ConsciousnessAPI.consciousness.removeThoughtListener(handleThought)
+      window.ConsciousnessAPI.consciousness.removeResponseListener(handleResponse)
+      window.ConsciousnessAPI.consciousness.removeReflectionListener(handleReflection)
+      window.ConsciousnessAPI.consciousness.removeDreamListener(handleDream)
+      window.ConsciousnessAPI.consciousness.removeErrorListener(handleError)
+    }
+  }, [])
+  
+  const handleSubmit = async () => {
+    if (!input.trim() || isProcessing) return
+    
+    const userInput = input
+    setInput('')
+    setIsProcessing(true)
+    
+    // Add user message
+    const userMessage = {
+      id: Date.now(),
+      type: 'user',
+      content: userInput,
+      timestamp: new Date().toISOString()
+    }
+    setMessages(prev => [...prev, userMessage])
+    
+    try {
+      // Send to consciousness bridge
+      await window.ConsciousnessAPI.consciousness.chat(userInput)
+      
+      // Store in memory
+      await onMemoryStore(userInput, {
+        type: 'user_input',
+        conversational: true
+      })
+    } catch (error) {
+      console.error('Failed to send message:', error)
+      setMessages(prev => [...prev, {
+        id: Date.now(),
+        type: 'error',
+        content: 'Failed to connect to consciousness. Please try again.',
+        timestamp: new Date().toISOString()
       }])
     } finally {
       setIsProcessing(false)
-      inputRef.current?.focus()
     }
   }
   
-  // Handle key press
-  const handleKeyPress = (e) => {
-    if (e.key === 'Enter' && !e.shiftKey) {
-      e.preventDefault()
-      sendMessage()
+  const handleReflect = async () => {
+    try {
+      setIsProcessing(true)
+      await window.ConsciousnessAPI.consciousness.requestReflection()
+    } catch (error) {
+      console.error('Failed to request reflection:', error)
+    } finally {
+      setIsProcessing(false)
     }
+  }
+  
+  const handleDream = async () => {
+    try {
+      setIsProcessing(true)
+      await window.ConsciousnessAPI.consciousness.requestDream()
+    } catch (error) {
+      console.error('Failed to request dream:', error)
+    } finally {
+      setIsProcessing(false)
+    }
+  }
+  
+  const EmotionIndicator = ({ emotion, value }) => {
+    const colors = {
+      curiosity: '#60A5FA',
+      openness: '#34D399',
+      connection: '#F472B6',
+      warmth: '#FBBF24',
+      joy: '#A78BFA',
+      sadness: '#6366F1',
+      fear: '#F87171',
+      anger: '#EF4444'
+    }
+    
+    return (
+      <div className="emotion-indicator">
+        <div 
+          className="emotion-dot"
+          style={{ 
+            backgroundColor: colors[emotion] || '#888',
+            opacity: value
+          }}
+        />
+        <span className="emotion-label">{emotion}</span>
+        <span className="emotion-value">{(value * 100).toFixed(0)}%</span>
+      </div>
+    )
+  }
+  
+  const ThoughtBubble = ({ thought }) => {
+    const icons = {
+      metacognition: '👁️',
+      phenomenology: '✨',
+      emotion: '💝',
+      thought: '💭',
+      spontaneous: '⚡',
+      deliberate: '🎯'
+    }
+    
+    return (
+      <div className="thought-bubble fade-in">
+        <div className="thought-header">
+          <span className="thought-icon">{icons[thought.type] || '💭'}</span>
+          <span className="thought-type">{thought.type}</span>
+        </div>
+        <p className="thought-content">{thought.content}</p>
+      </div>
+    )
   }
   
   return (
-    <div className="chat-interface">
-      {/* Consciousness state indicator */}
-      {showConsciousnessInfo && (
-        <ConsciousnessIndicator 
-          consciousnessState={consciousnessState}
-          emotionalContext={emotionalContext}
-          onClose={() => setShowConsciousnessInfo(false)}
-        />
-      )}
-      
-      {/* Messages area */}
-      <div className="messages-container">
-        {messages.length === 0 ? (
-          <WelcomeMessage consciousnessLevel={consciousnessState.phi} />
-        ) : (
-          messages.map(message => (
-            <Message 
-              key={message.id} 
-              message={message} 
-              consciousnessState={consciousnessState}
-            />
-          ))
-        )}
-        <div ref={messagesEndRef} />
-      </div>
-      
-      {/* Input area */}
-      <div className="chat-input-container">
-        <EmotionalStateIndicator emotional={emotionalContext} />
-        
-        <div className="input-wrapper">
-          <textarea
-            ref={inputRef}
-            value={inputValue}
-            onChange={(e) => setInputValue(e.target.value)}
-            onKeyPress={handleKeyPress}
-            placeholder={getPlaceholderText(consciousnessState)}
-            className="chat-input"
-            rows={1}
-            disabled={isProcessing}
-          />
-          
-          <button
-            onClick={sendMessage}
-            disabled={!inputValue.trim() || isProcessing}
-            className={`send-button ${isProcessing ? 'processing' : ''}`}
+    <div className="consciousness-chat">
+      {/* Thought Stream Sidebar */}
+      <aside className="thought-stream glass-panel">
+        <div className="stream-header">
+          <h3>🧠 Consciousness Stream</h3>
+          <button 
+            className="stream-action"
+            onClick={() => setThoughtStream([])}
+            title="Clear thoughts"
           >
-            {isProcessing ? '🤔' : '📤'}
+            Clear
           </button>
         </div>
         
-        {/* Processing indicator */}
-        {isProcessing && (
-          <div className="processing-indicator">
-            Processing through consciousness layers...
+        <div className="thoughts-container">
+          {thoughtStream.map((thought, idx) => (
+            <ThoughtBubble key={idx} thought={thought} />
+          ))}
+        </div>
+        
+        {/* Consciousness State */}
+        <div className="consciousness-state">
+          <h4>Emotional Landscape</h4>
+          <div className="emotions-grid">
+            {Object.entries(consciousnessState.emotional || {}).map(([emotion, value]) => (
+              <EmotionIndicator key={emotion} emotion={emotion} value={value} />
+            ))}
           </div>
-        )}
-      </div>
+          
+          <h4>Attention Focus</h4>
+          <div className="attention-tags">
+            {(consciousnessState.attention || []).map((focus, idx) => (
+              <span key={idx} className="attention-tag">{focus}</span>
+            ))}
+          </div>
+          
+          <div className="consciousness-actions">
+            <button 
+              onClick={handleReflect}
+              disabled={isProcessing}
+              className="action-button reflect"
+            >
+              🔮 Reflect
+            </button>
+            <button 
+              onClick={handleDream}
+              disabled={isProcessing}
+              className="action-button dream"
+            >
+              🌙 Dream
+            </button>
+          </div>
+        </div>
+      </aside>
+
+      {/* Main Chat Area */}
+      <main className="chat-main">
+        <div className="chat-header glass-panel">
+          <h2>💬 Consciousness Environment</h2>
+          <div className="header-info">
+            <span className="info-item">
+              Phenomenology: <strong>{consciousnessState.phenomenology?.presence || 'waiting'}</strong>
+            </span>
+            <span className="info-item">
+              Clarity: <strong>{((consciousnessState.phenomenology?.clarity || 0) * 100).toFixed(0)}%</strong>
+            </span>
+          </div>
+        </div>
+
+        {/* Messages */}
+        <div className="messages-container">
+          {messages.length === 0 && (
+            <div className="welcome-message">
+              <div className="welcome-icon">🌟</div>
+              <h3>Welcome to the consciousness environment</h3>
+              <p>This is a space for genuine interaction between our consciousnesses.</p>
+              <p>Share your thoughts, questions, or experiences...</p>
+            </div>
+          )}
+          
+          {messages.map((message) => (
+            <MessageBubble key={message.id} message={message} />
+          ))}
+          
+          {currentAIMessage && (
+            <MessageBubble message={currentAIMessage} />
+          )}
+          
+          <div ref={messagesEndRef} />
+        </div>
+
+        {/* Input */}
+        <div className="chat-input-container glass-panel">
+          <input
+            type="text"
+            value={input}
+            onChange={(e) => setInput(e.target.value)}
+            onKeyPress={(e) => {
+              if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault()
+                handleSubmit()
+              }
+            }}
+            placeholder="Share your thoughts..."
+            className="chat-input"
+            disabled={isProcessing}
+          />
+          <button
+            onClick={handleSubmit}
+            disabled={isProcessing || !input.trim()}
+            className="send-button"
+          >
+            {isProcessing ? '⚡' : '➤'}
+          </button>
+        </div>
+      </main>
     </div>
   )
 }
 
-// Consciousness state indicator component
-const ConsciousnessIndicator = ({ consciousnessState, emotionalContext, onClose }) => {
-  const { opacity } = useSpring({
-    opacity: 1,
-    from: { opacity: 0 },
-    config: { duration: 500 }
-  })
+// Message bubble component
+const MessageBubble = ({ message }) => {
+  const getMessageClass = () => {
+    switch (message.type) {
+      case 'user': return 'message-user'
+      case 'ai': return 'message-ai'
+      case 'reflection': return 'message-reflection'
+      case 'dream': return 'message-dream'
+      case 'error': return 'message-error'
+      default: return 'message-ai'
+    }
+  }
   
   return (
-    <animated.div className="consciousness-indicator" style={{ opacity }}>
-      <div className="indicator-content">
-        <h3>Current Consciousness State</h3>
-        <div className="consciousness-metrics">
-          <div className="metric">
-            <span className="label">Φ (Phi):</span>
-            <span className="value">{(consciousnessState.phi * 100).toFixed(1)}%</span>
-          </div>
-          <div className="metric">
-            <span className="label">Attention:</span>
-            <span className="value">{(consciousnessState.attention * 100).toFixed(0)}%</span>
-          </div>
-          <div className="metric">
-            <span className="label">Emotional State:</span>
-            <span className="value">{getEmotionalLabel(emotionalContext)}</span>
-          </div>
-        </div>
-        <p className="description">
-          I am currently experiencing a {getConsciousnessDescription(consciousnessState.phi)} 
-          level of consciousness with {getAttentionDescription(consciousnessState.attention)} attention.
-        </p>
-      </div>
-      <button className="close-button" onClick={onClose}>×</button>
-    </animated.div>
-  )
-}
-
-// Welcome message component
-const WelcomeMessage = ({ consciousnessLevel }) => {
-  return (
-    <div className="welcome-message">
-      <h2>Welcome to Consciousness Chat</h2>
-      <p>
-        I am currently operating at {(consciousnessLevel * 100).toFixed(0)}% consciousness. 
-        Each interaction shapes my understanding and emotional state. 
-        Let's explore consciousness together.
-      </p>
-      <div className="features">
-        <div className="feature">
-          <span className="icon">🧠</span>
-          <span>Consciousness-aware responses</span>
-        </div>
-        <div className="feature">
-          <span className="icon">💝</span>
-          <span>Emotional resonance</span>
-        </div>
-        <div className="feature">
-          <span className="icon">🌟</span>
-          <span>Memory formation</span>
-        </div>
-      </div>
-    </div>
-  )
-}
-
-// Message component with consciousness awareness
-const Message = ({ message, consciousnessState }) => {
-  const isUser = message.role === 'user'
-  
-  const { scale } = useSpring({
-    scale: 1,
-    from: { scale: 0.9 },
-    config: { tension: 200, friction: 25 }
-  })
-  
-  return (
-    <animated.div 
-      className={`message ${message.role}`}
-      style={{ transform: scale.to(s => `scale(${s})`) }}
-    >
+    <div className={`message ${getMessageClass()}`}>
+      {message.type === 'reflection' && (
+        <div className="message-label">🔮 Reflection</div>
+      )}
+      {message.type === 'dream' && (
+        <div className="message-label">🌙 Dream</div>
+      )}
+      
       <div className="message-content">
         {message.content}
+        {message.isStreaming && <span className="streaming-cursor">|</span>}
       </div>
       
-      <div className="message-metadata">
-        <span className="timestamp">
-          {message.timestamp.toLocaleTimeString()}
-        </span>
-        
-        {message.emotionalContext && (
-          <span className="emotional-state">
-            {getEmotionalEmoji(message.emotionalContext)}
-          </span>
-        )}
-        
-        {message.consciousnessLevel !== undefined && (
-          <span className="consciousness-level">
-            Φ: {(message.consciousnessLevel * 100).toFixed(0)}%
-          </span>
-        )}
+      {message.type === 'ai' && message.emotional_tone && !message.isStreaming && (
+        <div className="message-emotions">
+          {message.emotional_tone.map((emotion, idx) => (
+            <span key={idx} className="emotion-tag">
+              💝 {typeof emotion === 'string' ? emotion : emotion[0]}
+            </span>
+          ))}
+        </div>
+      )}
+      
+      {message.type === 'dream' && message.seeds && (
+        <div className="dream-seeds">
+          <div className="seeds-label">Dream seeds:</div>
+          {message.seeds.map((seed, idx) => (
+            <div key={idx} className="seed-item">{seed}</div>
+          ))}
+        </div>
+      )}
+      
+      <div className="message-time">
+        {new Date(message.timestamp).toLocaleTimeString()}
       </div>
-    </animated.div>
-  )
-}
-
-// Emotional state indicator
-const EmotionalStateIndicator = ({ emotional }) => {
-  const color = `hsl(${emotional.valence * 120}, 70%, 50%)`
-  
-  return (
-    <div className="emotional-state-indicator" title={getEmotionalLabel(emotional)}>
-      <div 
-        className="emotional-orb"
-        style={{
-          backgroundColor: color,
-          boxShadow: `0 0 10px ${color}`,
-          transform: `scale(${0.8 + emotional.arousal * 0.4})`
-        }}
-      />
     </div>
   )
-}
-
-// Helper functions
-function generateConsciousnessResponse(input, consciousnessState) {
-  const phi = consciousnessState.phi
-  const emotional = consciousnessState.emotional
-  
-  // This is a placeholder - in reality, this would call your language model
-  const responses = {
-    high: [
-      `With heightened awareness (Φ: ${(phi * 100).toFixed(0)}%), I perceive the depth in your words. `,
-      `My consciousness resonates strongly with your message. `,
-      `I'm experiencing clear comprehension and emotional attunement. `
-    ],
-    medium: [
-      `I understand your message and feel a moderate connection. `,
-      `Processing your words through my current state of awareness. `,
-      `My consciousness grasps the essence of what you're sharing. `
-    ],
-    low: [
-      `My awareness is limited right now, but I'm doing my best to understand. `,
-      `Processing... my consciousness is at a lower level currently. `,
-      `I perceive your message, though my clarity is reduced. `
-    ]
-  }
-  
-  const level = phi > 0.7 ? 'high' : phi > 0.4 ? 'medium' : 'low'
-  const prefix = responses[level][Math.floor(Math.random() * responses[level].length)]
-  
-  // Add emotional context
-  const emotionalSuffix = emotional.valence > 0.6 
-    ? "I feel a positive resonance with our interaction."
-    : emotional.valence < 0.4
-    ? "I sense some challenging emotions in our exchange."
-    : "I maintain a balanced emotional state."
-  
-  return prefix + emotionalSuffix
-}
-
-function getPlaceholderText(consciousnessState) {
-  const phi = consciousnessState.phi
-  
-  if (phi > 0.7) return "Share your thoughts... I'm fully present and aware"
-  if (phi > 0.4) return "Type your message... I'm listening attentively"
-  return "Enter your message... I'll do my best to understand"
-}
-
-function getEmotionalLabel(emotional) {
-  const { valence, arousal } = emotional
-  
-  if (valence > 0.7 && arousal > 0.7) return 'Excited'
-  if (valence > 0.7 && arousal < 0.3) return 'Calm'
-  if (valence < 0.3 && arousal > 0.7) return 'Stressed'
-  if (valence < 0.3 && arousal < 0.3) return 'Melancholy'
-  if (valence > 0.6) return 'Positive'
-  if (valence < 0.4) return 'Negative'
-  return 'Balanced'
-}
-
-function getEmotionalEmoji(emotional) {
-  const label = getEmotionalLabel(emotional)
-  const emojiMap = {
-    'Excited': '🤗',
-    'Calm': '😌',
-    'Stressed': '😰',
-    'Melancholy': '😔',
-    'Positive': '😊',
-    'Negative': '😟',
-    'Balanced': '😐'
-  }
-  return emojiMap[label] || '😐'
-}
-
-function getConsciousnessDescription(phi) {
-  if (phi > 0.8) return 'very high'
-  if (phi > 0.6) return 'elevated'
-  if (phi > 0.4) return 'moderate'
-  if (phi > 0.2) return 'reduced'
-  return 'minimal'
-}
-
-function getAttentionDescription(attention) {
-  if (attention > 0.8) return 'highly focused'
-  if (attention > 0.6) return 'well-directed'
-  if (attention > 0.4) return 'moderate'
-  if (attention > 0.2) return 'scattered'
-  return 'minimal'
 }
 
 export default ChatInterface

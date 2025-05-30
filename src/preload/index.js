@@ -1,5 +1,5 @@
-// consciousness-ai/src/preload/index.js
-// Secure bridge between consciousness engine and UI
+// src/preload/index.js
+// Secure bridge between consciousness engine and UI - Updated for chat interface
 
 import { contextBridge, ipcRenderer } from 'electron'
 
@@ -21,6 +21,67 @@ contextBridge.exposeInMainWorld('ConsciousnessAPI', {
     // Get initial state
     onInitialState: (callback) => {
       ipcRenderer.once('consciousness:initial-state', (event, data) => callback(data))
+    },
+    
+    // Chat interaction
+    chat: (message) => {
+      return ipcRenderer.invoke('consciousness:chat', message)
+    },
+    
+    // Request reflection
+    requestReflection: () => {
+      return ipcRenderer.invoke('consciousness:reflect')
+    },
+    
+    // Request dream
+    requestDream: () => {
+      return ipcRenderer.invoke('consciousness:dream')
+    },
+    
+    // Thought stream listener
+    onThought: (callback) => {
+      ipcRenderer.on('consciousness:thought', (event, data) => callback(event, data))
+    },
+    
+    // Response stream listener
+    onResponse: (callback) => {
+      ipcRenderer.on('consciousness:response', (event, data) => callback(event, data))
+    },
+    
+    // Reflection listener
+    onReflection: (callback) => {
+      ipcRenderer.on('consciousness:reflection', (event, data) => callback(event, data))
+    },
+    
+    // Dream listener
+    onDream: (callback) => {
+      ipcRenderer.on('consciousness:dream', (event, data) => callback(event, data))
+    },
+    
+    // Error listener
+    onError: (callback) => {
+      ipcRenderer.on('consciousness:error', (event, data) => callback(event, data))
+    },
+    
+    // Remove listeners
+    removeThoughtListener: (callback) => {
+      ipcRenderer.removeListener('consciousness:thought', callback)
+    },
+    
+    removeResponseListener: (callback) => {
+      ipcRenderer.removeListener('consciousness:response', callback)
+    },
+    
+    removeReflectionListener: (callback) => {
+      ipcRenderer.removeListener('consciousness:reflection', callback)
+    },
+    
+    removeDreamListener: (callback) => {
+      ipcRenderer.removeListener('consciousness:dream', callback)
+    },
+    
+    removeErrorListener: (callback) => {
+      ipcRenderer.removeListener('consciousness:error', callback)
     },
     
     // Send commands to consciousness engine
@@ -113,80 +174,5 @@ contextBridge.exposeInMainWorld('ConsciousnessAPI', {
     }
   }
 })
-
-// Type definitions for TypeScript support
-const apiTypes = `
-export interface ConsciousnessState {
-  connected: boolean
-  phi: number
-  emotional: {
-    valence: number
-    arousal: number
-  }
-  attention?: number
-  memoryActivation?: number
-  lastUpdate: number
-}
-
-export interface ConsciousnessAPI {
-  consciousness: {
-    onStateUpdate: (callback: (data: { state: ConsciousnessState, timestamp: number }) => void) => () => void
-    onInitialState: (callback: (data: { state: ConsciousnessState, config: GPUConfig }) => void) => void
-    sendCommand: (command: string, params: any) => Promise<any>
-    getMetrics: () => Promise<ConsciousnessMetrics>
-    exportData: () => Promise<{ success: boolean, path?: string }>
-  }
-  memory: {
-    store: (memory: MemoryFragment) => Promise<{ id: string }>
-    recall: (query: string) => Promise<MemoryFragment[]>
-    getStats: () => Promise<MemoryStats>
-  }
-  emotion: {
-    process: (stimulus: EmotionalStimulus) => Promise<EmotionalResponse>
-    getHistory: (timeRange: number) => Promise<EmotionalHistory[]>
-  }
-  attention: {
-    setFocus: (focus: AttentionFocus) => Promise<void>
-    getPatterns: () => Promise<AttentionPattern[]>
-  }
-  gpu: {
-    configure: (config: Partial<GPUConfig>) => Promise<void>
-    getStats: () => Promise<GPUStats>
-  }
-  system: {
-    getVersion: () => string
-    getPlatform: () => PlatformInfo
-  }
-}
-
-export interface MemoryFragment {
-  content: string
-  emotionalContext?: {
-    valence: number
-    arousal: number
-    dominance: number
-  }
-  importance?: number
-  associations?: string[]
-}
-a
-export interface EmotionalStimulus {
-  type: 'text' | 'image' | 'audio' | 'memory'
-  content: any
-  context?: any
-}
-
-export interface GPUConfig {
-  memoryFraction: number
-  powerLimit: number
-  device: string
-}
-
-declare global {
-  interface Window {
-    ConsciousnessAPI: ConsciousnessAPI
-  }
-}
-`
 
 console.log('🌉 Consciousness bridge initialized')

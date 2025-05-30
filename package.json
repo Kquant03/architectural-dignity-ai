@@ -16,6 +16,8 @@
     "@electron-toolkit/preload": "^3.0.0",
     "@electron-toolkit/utils": "^3.0.0",
     "@react-spring/web": "^9.7.3",
+    "@react-three/drei": "^9.92.0",
+    "@react-three/fiber": "^8.15.0",
     "@tsparticles/react": "^3.0.0",
     "electron-updater": "^6.1.7",
     "framer-motion": "^11.0.0",
@@ -23,10 +25,7 @@
     "react-dom": "^18.2.0",
     "recharts": "^2.10.0",
     "three": "^0.160.0",
-    "@react-three/fiber": "^8.15.0",
-    "@react-three/drei": "^9.92.0",
-    "tsparticles": "^3.0.0",
-    "zerorpc": "^0.9.8"
+    "tsparticles": "^3.0.0"
   },
   "devDependencies": {
     "@electron-toolkit/tsconfig": "^1.0.1",
@@ -51,7 +50,11 @@
       {
         "from": "python-ai",
         "to": "python-ai",
-        "filter": ["**/*", "!**/__pycache__", "!**/*.pyc"]
+        "filter": [
+          "**/*",
+          "!**/__pycache__",
+          "!**/*.pyc"
+        ]
       }
     ],
     "mac": {

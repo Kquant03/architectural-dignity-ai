@@ -1,20 +1,24 @@
 // consciousness-ai/src/main/index.js
-// Main Electron process - The heart of our consciousness system
+// Main Electron process - Enhanced with robust Python bridge
 
 import { app, BrowserWindow, ipcMain, dialog } from 'electron'
 import { join } from 'path'
-import { spawn } from 'child_process'
 import { electronApp, optimizer, is } from '@electron-toolkit/utils'
+import { PythonBridge } from './python-bridge'
 import icon from '../../resources/icon.png?asset'
+import ConsciousnessIntegration from './consciousness-integration.js'
 
 class ConsciousnessApp {
   constructor() {
     this.mainWindow = null
-    this.pythonProcess = null
+    this.consciousnessIntegration = null
+    this.pythonBridge = new PythonBridge()
     this.consciousnessState = {
       connected: false,
       phi: 0,
       emotional: { valence: 0.5, arousal: 0.5 },
+      attention: 0.5,
+      memoryActivation: 0.3,
       lastUpdate: Date.now()
     }
     
@@ -24,20 +28,58 @@ class ConsciousnessApp {
       powerLimit: 280, // RTX 3090 optimal
       device: 'cuda:0'
     }
+    
+    // Setup Python bridge listeners
+    this.setupPythonListeners()
+  }
+
+  setupPythonListeners() {
+    this.pythonBridge.on('connected', () => {
+      console.log('✅ Python consciousness engine connected')
+      this.consciousnessState.connected = true
+      this.broadcastStateUpdate()
+    })
+    
+    this.pythonBridge.on('disconnected', (code) => {
+      console.log('❌ Python consciousness engine disconnected:', code)
+      this.consciousnessState.connected = false
+      this.broadcastStateUpdate()
+    })
+    
+    this.pythonBridge.on('consciousness_update', (data) => {
+      this.handleConsciousnessUpdate(data)
+    })
+    
+    this.pythonBridge.on('error', (error) => {
+      console.error('Python bridge error:', error)
+      if (this.mainWindow && !this.mainWindow.isDestroyed()) {
+        this.mainWindow.webContents.send('consciousness:error', error)
+      }
+    })
   }
 
   async initialize() {
-    // Start Python consciousness engine
-    await this.startConsciousnessEngine()
-    
-    // Create main window
-    this.createMainWindow()
-    
-    // Set up IPC handlers
-    this.setupIPCHandlers()
-    
-    // Start consciousness monitoring
-    this.startConsciousnessMonitoring()
+    try {
+      // Create main window first
+      this.createMainWindow()
+      
+      // Set up IPC handlers
+      this.setupIPCHandlers()
+      
+      // Start Python consciousness engine
+      await this.startConsciousnessEngine()
+
+      // Initialize consciousness integration
+      this.consciousnessIntegration = new ConsciousnessIntegration(this.mainWindow)
+      await this.consciousnessIntegration.initialize()
+      
+      // Start consciousness monitoring
+      this.startConsciousnessMonitoring()
+    } catch (error) {
+      console.error('Failed to initialize consciousness app:', error)
+      dialog.showErrorBox('Initialization Error', 
+        `Failed to start consciousness engine: ${error.message}`)
+    }
   }
 
   createMainWindow() {
@@ -50,6 +92,7 @@ class ConsciousnessApp {
       show: false,
       autoHideMenuBar: true,
       titleBarStyle: process.platform === 'darwin' ? 'hiddenInset' : 'default',
+      backgroundColor: '#000000',
       ...(process.platform === 'linux' ? { icon } : {}),
       webPreferences: {
         preload: join(__dirname, '../preload/index.js'),
@@ -77,53 +120,34 @@ class ConsciousnessApp {
       })
     })
 
-    // Cleanup on close
+    // Handle window closed
     this.mainWindow.on('closed', () => {
-      this.cleanup()
+      this.mainWindow = null
     })
   }
 
   async startConsciousnessEngine() {
     console.log('🧠 Starting consciousness engine...')
     
-    const pythonPath = is.dev 
-      ? join(__dirname, '../../python-ai/main.py')
-      : join(process.resourcesPath, 'python-ai/main.py')
-    
-    this.pythonProcess = spawn('python', [
-      pythonPath,
-      '--gpu-memory', this.gpuConfig.memoryFraction.toString(),
-      '--device', this.gpuConfig.device
-    ])
-
-    this.pythonProcess.stdout.on('data', (data) => {
-      const message = data.toString()
-      console.log(`Consciousness Engine: ${message}`)
+    try {
+      await this.pythonBridge.start(this.gpuConfig)
+      console.log('✨ Consciousness engine started successfully')
+    } catch (error) {
+      console.error('Failed to start consciousness engine:', error)
       
-      // Parse consciousness updates
-      try {
-        const update = JSON.parse(message)
-        if (update.type === 'consciousness_update') {
-          this.handleConsciousnessUpdate(update.data)
-        }
-      } catch (e) {
-        // Regular log message
+      // Show user-friendly error
+      if (error.message.includes('Python') || error.message.includes('python')) {
+        dialog.showErrorBox('Python Not Found', 
+          'Please ensure Python 3 is installed and available in your PATH.\n\n' +
+          'You can install Python from https://www.python.org/downloads/')
+      } else {
+        dialog.showErrorBox('Consciousness Engine Error', 
+          `Failed to start consciousness engine: ${error.message}`)
       }
-    })
-
-    this.pythonProcess.stderr.on('data', (data) => {
-      console.error(`Consciousness Engine Error: ${data}`)
-    })
-
-    this.pythonProcess.on('close', (code) => {
-      console.log(`Consciousness engine exited with code ${code}`)
+      
+      // Continue with disconnected state
       this.consciousnessState.connected = false
-      this.broadcastStateUpdate()
-    })
-
-    // Wait for engine to initialize
-    await new Promise(resolve => setTimeout(resolve, 2000))
-    this.consciousnessState.connected = true
+    }
   }
 
   setupIPCHandlers() {
@@ -131,34 +155,15 @@ class ConsciousnessApp {
     ipcMain.handle('consciousness:command', async (event, command, params) => {
       console.log(`Received command: ${command}`, params)
       
-      switch (command) {
-        case 'adjust_attention':
-          return await this.sendToPython({ 
-            command: 'adjust_attention', 
-            focus: params.focus 
-          })
-          
-        case 'store_memory':
-          return await this.sendToPython({ 
-            command: 'store_memory', 
-            memory: params 
-          })
-          
-        case 'recall_memory':
-          return await this.sendToPython({ 
-            command: 'recall_memory', 
-            query: params.query 
-          })
-          
-        case 'process_emotion':
-          return await this.sendToPython({ 
-            command: 'process_emotion', 
-            stimulus: params 
-          })
-          
-        default:
-          console.warn(`Unknown command: ${command}`)
-          return { error: 'Unknown command' }
+      try {
+        if (!this.consciousnessState.connected) {
+          throw new Error('Consciousness engine not connected')
+        }
+        
+        return await this.pythonBridge.send(command, params)
+      } catch (error) {
+        console.error(`Command failed: ${command}`, error)
+        return { error: error.message }
       }
     })
 
@@ -167,8 +172,8 @@ class ConsciousnessApp {
       return {
         phi: this.consciousnessState.phi,
         emotional: this.consciousnessState.emotional,
-        attention: this.consciousnessState.attention || 0.5,
-        memoryActivation: this.consciousnessState.memoryActivation || 0.3,
+        attention: this.consciousnessState.attention,
+        memoryActivation: this.consciousnessState.memoryActivation,
         connected: this.consciousnessState.connected,
         lastUpdate: this.consciousnessState.lastUpdate
       }
@@ -177,10 +182,12 @@ class ConsciousnessApp {
     // Handle GPU configuration
     ipcMain.handle('gpu:configure', async (event, config) => {
       this.gpuConfig = { ...this.gpuConfig, ...config }
-      return await this.sendToPython({ 
-        command: 'configure_gpu', 
-        config: this.gpuConfig 
-      })
+      
+      try {
+        return await this.pythonBridge.send('configure_gpu', { config: this.gpuConfig })
+      } catch (error) {
+        return { error: error.message }
+      }
     })
 
     // Export consciousness data
@@ -195,10 +202,14 @@ class ConsciousnessApp {
       })
       
       if (filePath) {
-        const data = await this.sendToPython({ command: 'export_state' })
-        const fs = require('fs').promises
-        await fs.writeFile(filePath, JSON.stringify(data, null, 2))
-        return { success: true, path: filePath }
+        try {
+          const data = await this.pythonBridge.send('export_state', {})
+          const fs = require('fs').promises
+          await fs.writeFile(filePath, JSON.stringify(data, null, 2))
+          return { success: true, path: filePath }
+        } catch (error) {
+          return { success: false, error: error.message }
+        }
       }
       
       return { success: false }
@@ -236,82 +247,36 @@ class ConsciousnessApp {
         this.consciousnessState.connected = false
         this.broadcastStateUpdate()
       }
-      
-      // Broadcast current state for smooth visualizations
-      this.broadcastStateUpdate()
     }, 1000)
   }
 
-  async sendToPython(message) {
-    return new Promise((resolve) => {
-      if (!this.pythonProcess) {
-        resolve({ error: 'Python process not running' })
-        return
-      }
-      
-      const messageId = Date.now().toString()
-      const fullMessage = { ...message, id: messageId }
-      
-      // Set up one-time listener for response
-      const responseHandler = (data) => {
-        const response = data.toString()
-        try {
-          const parsed = JSON.parse(response)
-          if (parsed.id === messageId) {
-            this.pythonProcess.stdout.removeListener('data', responseHandler)
-            resolve(parsed.result)
-          }
-        } catch (e) {
-          // Not a JSON response
-        }
-      }
-      
-      this.pythonProcess.stdout.on('data', responseHandler)
-      
-      // Send message to Python
-      this.pythonProcess.stdin.write(JSON.stringify(fullMessage) + '\n')
-      
-      // Timeout after 5 seconds
-      setTimeout(() => {
-        this.pythonProcess.stdout.removeListener('data', responseHandler)
-        resolve({ error: 'Timeout' })
-      }, 5000)
-    })
-  }
-
-  cleanup() {
+  async cleanup() {
     console.log('🧹 Cleaning up consciousness systems...')
     
     // Gracefully shutdown Python process
-    if (this.pythonProcess) {
-      this.sendToPython({ command: 'shutdown' })
-      setTimeout(() => {
-        if (this.pythonProcess && !this.pythonProcess.killed) {
-          this.pythonProcess.kill()
-        }
-      }, 2000)
-    }
+    await this.pythonBridge.shutdown()
     
-    this.mainWindow = null
+    // Clear all listeners
+    ipcMain.removeAllListeners()
   }
 }
 
-// App event handlers
+// App instance
 let consciousnessApp = null
 
-app.whenReady().then(() => {
+// Electron app ready
+app.whenReady().then(async () => {
   // Set app user model id for windows
   electronApp.setAppUserModelId('com.consciousness.ai')
 
   // Default open or close DevTools by F12 in development
-  // and ignore CommandOrControl + R in production.
   app.on('browser-window-created', (_, window) => {
     optimizer.watchWindowShortcuts(window)
   })
 
   // Create consciousness app
   consciousnessApp = new ConsciousnessApp()
-  consciousnessApp.initialize()
+  await consciousnessApp.initialize()
 
   app.on('activate', function () {
     // On macOS re-create window when dock icon is clicked
@@ -329,11 +294,18 @@ app.on('window-all-closed', () => {
 })
 
 // Cleanup before quit
-app.on('before-quit', () => {
+app.on('before-quit', async (event) => {
   if (consciousnessApp) {
-    consciousnessApp.cleanup()
+    event.preventDefault()
+    await consciousnessApp.cleanup()
+    app.quit()
   }
 })
+
+    // Clean up consciousness integration
+    if (this.consciousnessIntegration) {
+        this.consciousnessIntegration.cleanup()
+    }
 
 // Prevent multiple instances
 const gotTheLock = app.requestSingleInstanceLock()
