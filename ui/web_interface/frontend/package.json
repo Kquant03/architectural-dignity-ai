@@ -1,0 +1,22 @@
+{
+  "name": "consciousness-ui",
+  "version": "1.0.0",
+  "description": "AI Consciousness Architecture Web Interface",
+  "main": "index.js",
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start"
+  },
+  "dependencies": {
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "next": "^13.4.0",
+    "three": "^0.152.0",
+    "@react-three/fiber": "^8.13.0",
+    "@react-three/drei": "^9.65.0",
+    "d3": "^7.8.0",
+    "framer-motion": "^10.12.0",
+    "socket.io-client": "^4.6.0"
+  }
+}
