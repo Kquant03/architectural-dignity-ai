@@ -1,4 +1,7 @@
+-- PostgreSQL Database Initialization for Consciousness AI
+-- Run this script to set up the complete database schema
 
+-- Create database (run as superuser)
 CREATE DATABASE consciousness_ai;
 
 -- Connect to consciousness_ai database

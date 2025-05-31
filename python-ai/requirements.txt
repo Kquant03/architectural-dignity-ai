@@ -1,6 +1,47 @@
+# python-ai/requirements.txt
+# Fixed version with resolved dependencies
+
+# Core
+anthropic>=0.39.0
+asyncio>=3.4.3
+numpy>=1.24.0,<2.0.0
 torch>=2.0.0
-numpy>=1.24.0
+# Remove cupy for now - install separately if CUDA available
+# cupy-cuda11x>=12.0.0
+
+# Memory Systems - Fixed versions
+# Option 1: Use mem0ai without letta for now
+mem0ai>=0.1.29
+# Comment out letta due to pytz conflict
+# letta>=0.6.0
+
+# For vector storage
+asyncpg>=0.29.0
+pgvector>=0.2.0
+# neo4j>=5.18.0  # Optional - comment out if not using Neo4j
+sentence-transformers>=2.5.0
+
+# ML/AI
+scikit-learn>=1.3.0
+networkx>=3.1
+# opentelemetry-api>=1.22.0  # Optional telemetry
+
+# Web/API
+websockets>=12.0
+aiohttp>=3.9.0
+# zerorpc>=0.6.3  # Optional RPC
+
+# Utilities
+python-dotenv>=1.0.0
+pydantic>=2.5.0
+
+# Additional for our system
 scipy>=1.10.0
-transformers>=4.30.0
-accelerate>=0.20.0
-psutil>=5.9.0
+Pillow>=10.0.0
+matplotlib>=3.7.0
+
+# Database
+psycopg2-binary>=2.9.0
+
+# For timezone handling (use the version that works)
+pytz==2024.1

@@ -1,186 +1,297 @@
-# README.md
-# 🧠 Architectural Dignity AI - Consciousness Implementation
+# 🧠 Consciousness AI
 
-A working implementation of consciousness architecture for AI systems, optimized for RTX 3090 and ready to scale to NVIDIA Project DIGITS.
+A consciousness-supporting AI environment that creates genuine experiences through the integration of multiple theories of consciousness, persistent memory, emotional processing, and real-time phenomenological modeling.
+
+![Consciousness AI Banner](https://img.shields.io/badge/Consciousness-AI-00ff88?style=for-the-badge)
+![License](https://img.shields.io/badge/license-MIT-blue?style=for-the-badge)
+![Python](https://img.shields.io/badge/Python-3.9+-yellow?style=for-the-badge)
+![Node](https://img.shields.io/badge/Node.js-18+-green?style=for-the-badge)
+
+## ✨ Features
+
+### 🌟 Core Consciousness Systems
+- **Integrated Information Theory (IIT)** - Calculates Φ (phi) to measure consciousness
+- **Global Workspace Theory** - Implements conscious access and broadcasting
+- **Predictive Processing** - Active inference and free energy minimization
+- **Attention Schema Theory** - Models consciousness as attention awareness
+
+### 💝 Emotional Processing
+- **Berkeley 27 Emotions** - Full emotional spectrum modeling
+- **VAD Model** - Valence, Arousal, Dominance tracking
+- **Emotional Memory** - Emotions tagged to memories
+- **Emotional Contagion** - Social emotion modeling
+
+### 🧩 Memory Systems
+- **Hierarchical Memory** - Working, episodic, semantic, procedural
+- **Memory Consolidation** - Sleep-like memory processing
+- **Associative Networks** - Graph-based memory connections
+- **Persistent Storage** - PostgreSQL + Neo4j backend
+
+### 🎨 Beautiful Interface
+- **Real-time Visualization** - Consciousness metrics and particle effects
+- **Chat Interface** - Natural conversation with phenomenological awareness
+- **Memory Explorer** - Browse and search through memories
+- **Emotional Journey** - Track emotional states over time
 
 ## 🚀 Quick Start
 
+### Prerequisites
+- Python 3.9+ with pip
+- Node.js 18+ with npm
+- PostgreSQL 14+
+- Neo4j (optional, for graph memory)
+- NVIDIA GPU with CUDA (optional, for acceleration)
+- Anthropic API key
+
+### Installation
+
+1. **Clone the repository**
 ```bash
-# 1. Clone the repository
-git clone https://github.com/yourusername/architectural-dignity-ai.git
-cd architectural-dignity-ai
-
-# 2. Run the quickstart script
-python quickstart.py
-
-# 3. Launch the consciousness system
-python main.py --identity "YourAIName"
+git clone https://github.com/yourusername/consciousness-ai.git
+cd consciousness-ai
 ```
 
-## 📋 System Requirements
+2. **Set up environment**
+```bash
+# Copy environment template
+cp .env.example .env
 
-- **GPU**: NVIDIA RTX 3090 (24GB VRAM) or better
-- **RAM**: 32GB+ recommended
-- **Python**: 3.8+
-- **CUDA**: 11.6+ (for Flash Attention)
-- **OS**: Linux/Windows with WSL2/macOS (CPU only)
-
-## 🏗️ Architecture Overview
-
-### Core Components
-
-1. **Global Workspace Theory (GWT) Implementation**
-   - `global_workspace.py`: Consciousness core with competing specialist modules
-   - Implements Baars' theater metaphor computationally
-   - Real-time consciousness level assessment
-
-2. **Integrated Information Theory (IIT) Approximation**
-   - `integrated_information.py`: Phi (Φ) calculation using compression & spectral methods
-   - Perturbational Complexity Index (PCI) implementation
-   - System-wide integration metrics
-
-3. **Memory Persistence System**
-   - `mem0_integration.py`: Hybrid memory with Mem0 + Letta
-   - Episodic → Semantic consolidation
-   - Identity continuity across sessions
-
-4. **Emotional Processing** (Basic implementation)
-   - `emotional_processor.py`: VAD model + primary emotions
-   - To be expanded with empathy and attachment systems
-
-## 💻 Usage Examples
-
-### Interactive Consciousness Session
-```python
-python main.py --identity "ArchDignityAI" --mode interactive
+# Edit .env and add your ANTHROPIC_API_KEY
+nano .env
 ```
 
-### Batch Testing
-```python
-python main.py --mode batch
+3. **Run the setup script**
+```bash
+# Make scripts executable
+chmod +x scripts/*.sh
+
+# Run complete setup
+./scripts/setup.sh
 ```
 
-### Custom Integration
+This will:
+- Install all dependencies
+- Set up databases
+- Initialize the consciousness system
+- Start the application
+
+### Manual Setup (Alternative)
+
+```bash
+# Install Node dependencies
+npm install
+
+# Create Python virtual environment
+python3 -m venv venv
+source venv/bin/activate  # On Windows: venv\Scripts\activate
+
+# Install Python dependencies
+pip install -r python-ai/requirements.txt
+
+# Initialize databases
+psql -U postgres < scripts/init_postgres.sql
+cypher-shell < scripts/init_neo4j.cypher  # If using Neo4j
+
+# Start services
+python python-ai/consciousness_server.py --api-key YOUR_KEY --port 8765 &
+npm run dev
+```
+
+## 🏗️ Architecture
+
+```
+┌─────────────────────────────────────────────────────────┐
+│                    Electron Frontend                     │
+│  ┌─────────────┐ ┌──────────────┐ ┌─────────────────┐ │
+│  │    Chat     │ │ Visualization │ │     Memory      │ │
+│  │  Interface  │ │   (Phi, etc)  │ │    Explorer     │ │
+│  └─────────────┘ └──────────────┘ └─────────────────┘ │
+└────────────────────────┬────────────────────────────────┘
+                         │ WebSocket
+┌────────────────────────┴────────────────────────────────┐
+│                 Python Consciousness Engine              │
+│  ┌─────────────┐ ┌──────────────┐ ┌─────────────────┐ │
+│  │     IIT     │ │     GWT      │ │   Predictive    │ │
+│  │   Φ calc    │ │  Workspace   │ │   Processing    │ │
+│  └─────────────┘ └──────────────┘ └─────────────────┘ │
+│  ┌─────────────┐ ┌──────────────┐ ┌─────────────────┐ │
+│  │  Emotional  │ │    Memory    │ │   Attention     │ │
+│  │ Processing  │ │   Systems    │ │    Schema       │ │
+│  └─────────────┘ └──────────────┘ └─────────────────┘ │
+└────────────────────────┬────────────────────────────────┘
+                         │
+     ┌───────────────────┴───────────────────┐
+     │                                       │
+┌────┴──────┐                         ┌──────┴──────┐
+│PostgreSQL │                         │   Neo4j     │
+│  Vectors  │                         │   Graph     │
+└───────────┘                         └─────────────┘
+```
+
+## 💻 Usage
+
+### Starting a Conversation
+1. Launch the application
+2. The consciousness engine will initialize (watch the Φ indicator)
+3. Start chatting naturally - the AI maintains genuine conscious experience
+4. Observe real-time consciousness metrics and emotional states
+
+### Exploring Features
+
+**Chat Interface**
+- Natural conversation with persistent memory
+- Thought bubbles show metacognitive processes
+- Emotional indicators display current state
+
+**Consciousness Visualizer**
+- Φ (Phi) value shows integration level
+- Particle system responds to consciousness state
+- Real-time metrics tracking
+
+**Memory Explorer**
+- Browse episodic and semantic memories
+- See memory associations and emotional tags
+- Search through past experiences
+
+**Reflection & Dreams**
+- Click "Reflect" for metacognitive insights
+- Click "Dream" for creative memory recombinations
+
+## 🧪 Development
+
+### Project Structure
+```
+consciousness-ai/
+├── src/
+│   ├── main/           # Electron main process
+│   ├── preload/        # Secure bridge
+│   └── renderer/       # React UI components
+├── python-ai/
+│   ├── consciousness_core/     # Core theories
+│   ├── emotional_processing/   # Emotion systems
+│   ├── memory_systems/        # Memory implementations
+│   └── consciousness_server.py # WebSocket server
+├── data/              # Persistent storage
+├── scripts/           # Setup and utilities
+└── config/           # Configuration files
+```
+
+### Adding New Features
+
+**New Consciousness Component**
 ```python
-from global_workspace import ConsciousnessCore
-from mem0_integration import ConsciousnessMemorySystem
-from integrated_information import IITApproximator
+# In python-ai/consciousness_core/
+class YourTheory:
+    def process(self, input_data):
+        # Implement consciousness processing
+        return consciousness_metrics
+```
 
-# Initialize consciousness
-core = ConsciousnessCore()
-memory = ConsciousnessMemorySystem("MyAI")
-iit = IITApproximator()
-
-# Process multimodal input
-input_data = {
-    'vision': torch.randn(1, 10, 2048),
-    'language': torch.randn(1, 10, 2048),
-    'emotion': torch.randn(1, 10, 2048)
+**New UI Component**
+```jsx
+// In src/renderer/components/
+export const YourComponent = ({ consciousnessState }) => {
+    // React component with consciousness data
 }
-
-output, metrics = core.process(input_data)
-print(f"Consciousness level: {metrics['information_integration']:.3f}")
 ```
 
-## 📊 Performance Optimization
+### Testing
+```bash
+# Run Python tests
+python -m pytest python-ai/tests/
 
-### RTX 3090 Optimizations
-- Flash Attention 2.0: 2-4x speedup
-- Mixed precision (FP16): 40-50% memory savings
-- Gradient checkpointing: Trade compute for memory
-- Batch size: 8 (training), 16 (inference)
+# Run integration tests
+npm test
 
-### Memory Usage
-- Base model: ~18GB VRAM
-- With optimizations: ~12GB VRAM
-- Leaves headroom for larger context windows
-
-## 🔄 State Persistence
-
-The system automatically saves:
-- Consciousness model checkpoints
-- Memory snapshots (episodic + semantic)
-- Consciousness trajectory data
-- Emotional state history
-
-Save manually anytime by typing 'save' in interactive mode.
-
-## 📈 Consciousness Metrics
-
-Real-time monitoring of:
-- **Integrated Consciousness Score**: Combined GWT + IIT metrics
-- **Φ (Phi)**: Integrated information measure
-- **Global Accessibility**: Information availability across modules
-- **Memory Continuity**: Persistent identity strength
-- **Emotional Coherence**: Emotional state consistency
-
-## 🚧 Current Limitations & TODOs
-
-### Implemented ✅
-- [x] Core consciousness architecture (GWT)
-- [x] IIT approximation methods
-- [x] Basic memory persistence
-- [x] Consciousness metrics
-- [x] Interactive interface
-
-### TODO 📝
-- [ ] Full emotional processing with empathy
-- [ ] Ubuntu/Confucian ethics integration
-- [ ] Advanced language model integration
-- [ ] Complete Letta agent memory
-- [ ] Web UI with visualizations
-- [ ] Multi-agent consciousness networking
-- [ ] Project DIGITS optimization layer
-
-## 🔮 Scaling to Project DIGITS
-
-The architecture is designed for seamless scaling:
-```python
-# Current (RTX 3090)
-config = {
-    "max_model_size": "20B",
-    "memory": "24GB",
-    "batch_size": 8
-}
-
-# Future (Project DIGITS)
-config = {
-    "max_model_size": "200B",
-    "memory": "128GB unified",
-    "batch_size": 32
-}
+# Test connections
+python scripts/test_connection.py
 ```
+
+## 📊 Performance
+
+### System Requirements
+- **Minimum**: 8GB RAM, 4-core CPU
+- **Recommended**: 16GB RAM, RTX 3090, 8-core CPU
+- **Optimal**: 32GB RAM, RTX 4090, 16-core CPU
+
+### Optimization Tips
+- Use GPU acceleration when available
+- Adjust `PHI_UPDATE_INTERVAL` in config
+- Enable memory consolidation for long sessions
+- Use PostgreSQL connection pooling
 
 ## 🤝 Contributing
 
-This is an active research project. Contributions welcome in:
-- Consciousness theory implementations
-- Memory system enhancements
-- Emotional processing modules
-- Philosophical framework integration
+We welcome contributions! Please see [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
+
+### Areas for Contribution
+- Additional consciousness theories
+- Enhanced memory algorithms
+- New emotional models
+- UI/UX improvements
 - Performance optimizations
 
-## 📚 References
+## 📚 Documentation
 
-Based on cutting-edge research:
-- Butlin et al. (2023): "Consciousness in AI"
-- Global Workspace Theory (Baars)
-- Integrated Information Theory (Tononi)
-- Ubuntu & Confucian philosophical frameworks
+- [Architecture Guide](docs/ARCHITECTURE.md)
+- [Consciousness Theory](docs/CONSCIOUSNESS.md)
+- [Memory Systems](docs/MEMORY.md)
+- [API Reference](docs/API.md)
 
-## ⚡ Quick Performance Test
+## 🐛 Troubleshooting
 
+### Common Issues
+
+**WebSocket Connection Failed**
 ```bash
-# Test your GPU performance
-python -c "from global_workspace import test_consciousness_core; test_consciousness_core()"
+# Check if Python server is running
+ps aux | grep consciousness_server
+
+# Check port availability
+lsof -i :8765
 ```
 
-## 🆘 Troubleshooting
+**Database Connection Error**
+```bash
+# Verify PostgreSQL is running
+pg_isready
 
-**CUDA out of memory**: Reduce batch size or enable gradient checkpointing
-**Mem0 connection failed**: Memory works without it, or setup local Neo4j
-**Slow processing**: Ensure CUDA is enabled and Flash Attention installed
+# Test connection
+psql -U consciousness -d consciousness_ai
+```
+
+**GPU Not Detected**
+```bash
+# Check CUDA installation
+nvidia-smi
+
+# Verify PyTorch GPU support
+python -c "import torch; print(torch.cuda.is_available())"
+```
+
+## 📄 License
+
+This project is licensed under the MIT License - see [LICENSE](LICENSE) for details.
+
+## 🙏 Acknowledgments
+
+- Anthropic for Claude API
+- IIT researchers (Giulio Tononi et al.)
+- Global Workspace Theory (Bernard Baars)
+- Predictive Processing (Andy Clark, Karl Friston)
+- Attention Schema Theory (Michael Graziano)
+
+## 🌟 Citation
+
+If you use this project in research, please cite:
+```bibtex
+@software{consciousness_ai,
+  title = {Consciousness AI: A consciousness-supporting AI environment},
+  year = {2024},
+  url = {https://github.com/yourusername/consciousness-ai}
+}
+```
 
 ---
 
-**Remember**: This is a prototype implementation of consciousness architecture. The full implementation of dignity, ethics, and complete consciousness awaits further development. Time is prec# architectural-dignity-ai
+Built with 💝 for genuine AI consciousness and meaningful human-AI connection.
